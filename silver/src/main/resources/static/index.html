@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>메롱</title>
+<style type="text/css">
+	#list {
+		height : 50vh;
+		overflow : scroll;
+	}
+</style>
+</head>
+<body>
+	<h1>혼자 있음 SPA(Single Page Application)</h1>
+	<div id="list"></div>
+	<div id="gitae">
+		<form action="">
+			번호 <input type="text" name="sujinNum" id="" value=""><br>
+			이름 <input type="text" name="sujinName" id="" value=""><br>
+			내용 <input type="text" name="sujinContent" id="" value=""><br>
+			<input type="button" onclick="fInsert()" value="입력">
+			<input type="button" onclick="fUpdate()" value="수정">
+			<input type="button" onclick="fDel()" value="삭제">
+		</form>
+	</div>
+<script>
+	const myList = document.querySelector("#list");
+
+	// 리스트 출력 함수
+	function fList(){
+		let xhr = new XMLHttpRequest();
+		xhr.open("GET", "/api/sujins", true);
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4 && xhr.status == 200){
+				let dataList = JSON.parse(xhr.responseText);
+				let tblStr = "<table border=1>";
+					tblStr += "<tr><th>넘버</th><th>이름</th><th>내용</th></tr>";
+				for(let i=0; i<dataList.length; i++){
+					tblStr += "<tr>"
+					tblStr +=`<td><a href="#" onclick="fOne('${dataList[i].sujinNum}')">${dataList[i].sujinNum}</td>`;
+					tblStr +=`<td>${dataList[i].sujinName}</td>`;
+					tblStr +=`<td>${dataList[i].sujinContent}</td>`;
+					tblStr +="</tr>"
+				}
+				tblStr += "</table>"
+				myList.innerHTML = tblStr;
+			}
+		}
+		xhr.send();
+	}
+	// Sujin 1개만 가져오깅
+	const myForm = document.forms[0];	// form은 id 따로 없이 form으로 부를 수 있다. 
+	function fOne(pNum){
+		event.preventDefault();	// a 태그 내장기능 href로 이동하는 거 막깅 
+		let xhr = new XMLHttpRequest();
+		xhr.open("GET", `/api/sujin/${pNum}`, true);
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4 && xhr.status == 200){
+				let sujinOne = JSON.parse(xhr.responseText);
+				myForm.sujinNum.value = sujinOne.sujinNum;
+				myForm.sujinName.value = sujinOne.sujinName;
+				myForm.sujinContent.value = sujinOne.sujinContent;
+			}
+		}
+		xhr.send();
+	}
+
+	// Sujin 넣깅
+	function fInsert(){
+		// 개발시에는 넘기는 data가 누네 잘 들어오게 하는 게 디버깅에 효율적
+		let data = {
+			sujinName : myForm.sujinName.value,
+			sujinContent : myForm.sujinContent.value
+		}
+		let xhr = new XMLHttpRequest();
+		xhr.open("POST", "/api/sujin", true);
+		xhr.setRequestHeader("Content-Type", "application/json;charset=utf8");
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4 && xhr.status == 200){
+				if(xhr.responseText != 0){
+					alert("서버에서 잘 처리했다네용");
+					fList();	// 일단은 간단하게 다시 리스트를 부르는 걸롱
+								// 실제는 tr만 추가적으로 붙여주는 것이 효율적
+				}
+			}
+		}
+		xhr.send(JSON.stringify(data));
+	}
+
+	// Sujin 수정
+	function fUpdate(){
+		// 개발시에는 넘기는 data가 누네 잘 들어오게 하는 게 디버깅에 효율적
+		let data = {
+			sujinNum : myForm.sujinNum.value,
+			sujinName : myForm.sujinName.value,
+			sujinContent : myForm.sujinContent.value
+		}
+		let xhr = new XMLHttpRequest();
+		xhr.open("PUT", "/api/sujin", true);
+		xhr.setRequestHeader("Content-Type", "application/json;charset=utf8");
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4 && xhr.status == 200){
+				if(xhr.responseText != 0){
+					alert("서버에서 잘 처리했다네용");
+					fList();	// 일단은 간단하게 다시 리스트를 부르는 걸롱
+								// 실제는 tr만 추가적으로 붙여주는 것이 효율적
+				}
+			}
+		}
+		xhr.send(JSON.stringify(data));
+	}
+
+	// Sujin 사악제
+	function fDel(){
+		let sujinNum = myForm.sujinNum.value;
+		let xhr = new XMLHttpRequest();
+		xhr.open("DELETE", `/api/sujin/${sujinNum}`, true);
+		xhr.setRequestHeader("Content-Type", "application/json;charset=utf8");
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4 && xhr.status == 200){
+				if(xhr.responseText != 0){
+					alert("서버에서 잘 처리했다네용");
+					fList();	// 일단은 간단하게 다시 리스트를 부르는 걸롱
+								// 실제는 tr만 추가적으로 붙여주는 것이 효율적
+				}
+			}
+		}
+		xhr.send();
+	}
+
+	window.addEventListener("DOMcontentLoaded",fList);
+</script>
+</body>
+</html>
